@@ -114,6 +114,14 @@
             android:label="@string/app_history"
             android:exported="false" />
 
+        <activity android:name=".AutoGo"
+            android:label="自动跑"
+            android:exported="false"/>
+
+        <service android:name="com.zcshou.service.AutoService"
+            android:exported="false"
+            />
+
     </application>
 
 </manifest>

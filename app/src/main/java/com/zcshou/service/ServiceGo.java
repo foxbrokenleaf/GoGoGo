@@ -23,14 +23,19 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Process;
 import android.os.SystemClock;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ComponentActivity;
 import androidx.core.app.NotificationCompat;
 
 import com.elvishew.xlog.XLog;
+import com.zcshou.gogogo.AutoGo;
 import com.zcshou.gogogo.MainActivity;
 import com.zcshou.gogogo.R;
 import com.zcshou.joystick.JoyStick;
+
+import java.math.BigDecimal;
 
 public class ServiceGo extends Service {
     // 定位相关变量
@@ -38,10 +43,10 @@ public class ServiceGo extends Service {
     public static final double DEFAULT_LNG = 117.027707;
     public static final double DEFAULT_ALT = 55.0D;
     public static final float DEFAULT_BEA = 0.0F;
-    private double mCurLat = DEFAULT_LAT;
-    private double mCurLng = DEFAULT_LNG;
-    private double mCurAlt = DEFAULT_ALT;
-    private float mCurBea = DEFAULT_BEA;
+    private double mCurLat = DEFAULT_LAT;   //经度
+    private double mCurLng = DEFAULT_LNG;   //维度
+    private double mCurAlt = DEFAULT_ALT;   //海拔
+    private float mCurBea = DEFAULT_BEA;    //角度
     private double mSpeed = 1.2;        /* 默认的速度，单位 m/s */
     private static final int HANDLER_MSG_ID = 0;
     private static final String SERVICE_GO_HANDLER_NAME = "ServiceGoLocation";
@@ -58,6 +63,10 @@ public class ServiceGo extends Service {
     private NoteActionReceiver mActReceiver;
     // 摇杆相关
     private JoyStick mJoyStick;
+
+    /*============================FBL 新增代码=====================================*/
+    private static final double mLngDiff = 0.012101;
+    private static final double mLatDiff = 0.003382;
 
     private final ServiceGoBinder mBinder = new ServiceGoBinder();
 
@@ -158,9 +167,19 @@ public class ServiceGo extends Service {
                 // Latitude: 1 deg = 110.574 km // 纬度的每度的距离大约为 110.574km
                 // Longitude: 1 deg = 111.320*cos(latitude) km  // 经度的每度的距离从0km到111km不等
                 // 具体见：http://wp.mlab.tw/?p=2200
+                String msg = "ServiceGo_msg:";
+                XLog.e(msg + "disLng:" + disLng + " | disLat:" + disLat);
                 mCurLng += disLng / (111.320 * Math.cos(Math.abs(mCurLat) * Math.PI / 180));
                 mCurLat += disLat / 110.574;
                 mCurBea = (float) angle;
+                if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mLngDiff < mCurLng && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude + mLngDiff > mCurLng)
+                    if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mLatDiff < mCurLat && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude + mLatDiff > mCurLat)
+                        if(MainActivity.fbl_pos_list_index - 1 != AutoGo.Auto_Pos_index)
+                            AutoGo.Auto_Pos_index++;
+                //new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
+                XLog.e(msg + "ServiceGo onMoveInfo -> dest - mCurLng:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mCurLng)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | dest - mCurLat:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+                XLog.e(msg + "ServiceGo onMoveInfo -> mCurLng:" + new BigDecimal(mCurLng).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | mCurLat:" + new BigDecimal(mCurLat).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+
             }
 
             @Override
@@ -168,6 +187,7 @@ public class ServiceGo extends Service {
                 mCurLng = lng;
                 mCurLat = lat;
                 mCurAlt = alt;
+
             }
         });
         mJoyStick.show();
@@ -235,6 +255,7 @@ public class ServiceGo extends Service {
 
     private void setLocationGPS() {
         try {
+            //XLog.e("mCurAlt:" + mCurAlt + " mCurBea:" + mCurBea + " mCurLat:" + mCurLat + " mCurLng:" + mCurLng);
             // 尽可能模拟真实的 GPS 数据
             Location loc = new Location(LocationManager.GPS_PROVIDER);
             loc.setAccuracy(Criteria.ACCURACY_FINE);    // 设定此位置的估计水平精度，以米为单位。
@@ -325,6 +346,7 @@ public class ServiceGo extends Service {
 
     public class ServiceGoBinder extends Binder {
         public void setPosition(double lng, double lat, double alt) {
+
             mLocHandler.removeMessages(HANDLER_MSG_ID);
             mCurLng = lng;
             mCurLat = lat;

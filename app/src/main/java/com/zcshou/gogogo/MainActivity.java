@@ -45,6 +45,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBarDrawerToggle;
@@ -96,12 +97,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.zcshou.joystick.JoyStick;
 import com.zcshou.service.ServiceGo;
 import com.zcshou.database.DataBaseHistoryLocation;
 import com.zcshou.database.DataBaseHistorySearch;
 import com.zcshou.utils.ShareUtils;
 import com.zcshou.utils.GoUtils;
 import com.zcshou.utils.MapUtils;
+
+import com.zcshou.gogogo.AutoGo;
 
 import com.elvishew.xlog.XLog;
 
@@ -136,7 +140,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
     public static String mCurrentCity = null;
     private MapView mMapView;
     private static BaiduMap mBaiduMap = null;
-    private static LatLng mMarkLatLngMap = new LatLng(36.547743718042415, 117.07018449827267); // 当前标记的地图点
+    private static LatLng mMarkLatLngMap = new LatLng(30.445221, 114.42782); // 当前标记的地图点
     private static String mMarkName = null;
     private GeoCoder mGeoCoder;
     private SensorManager mSensorManager;
@@ -172,6 +176,14 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
     private long mDownloadId;
     private BroadcastReceiver mDownloadBdRcv;
     private String mUpdateFilename;
+
+    /*============================== FBL 新增代码 ==============================*/
+    public static final int fbl_max_mark_num = 5;
+    public static int fbl_pos_list_index = 0;
+    public static LatLng[] fbl_pos_list = new  LatLng[fbl_max_mark_num];
+
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -725,6 +737,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
         try {
             // 定位初始化
             mLocClient = new LocationClient(this);
+
             mLocClient.registerLocationListener(new BDAbstractLocationListener() {
                 @Override
                 public void onReceiveLocation(BDLocation bdLocation) {
@@ -830,6 +843,20 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
             }
         });
 
+        //==========================================================
+        Button clearnmarkmapInButton = this.findViewById(R.id.ClearMarkMap);
+        clearnmarkmapInButton.setOnClickListener(v -> fbl_clearnMarkMap());
+
+        Button NextPosInButton = this.findViewById(R.id.autorun);
+        NextPosInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(MainActivity.this, AutoGo.class));
+
+            }
+        });
+        //==========================================================
+
         ImageButton curPosBtn = this.findViewById(R.id.cur_position);
         curPosBtn.setOnClickListener(v -> resetMap());
 
@@ -896,10 +923,19 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
     //标定选择的位置
     private void markMap() {
         if (mMarkLatLngMap != null) {
-            MarkerOptions ooA = new MarkerOptions().position(mMarkLatLngMap).icon(mMapIndicator);
-            mBaiduMap.clear();
-            mBaiduMap.addOverlay(ooA);
+            if(fbl_pos_list_index < fbl_max_mark_num) {
+                MarkerOptions ooA = new MarkerOptions().position(mMarkLatLngMap).icon(mMapIndicator);
+                fbl_pos_list[fbl_pos_list_index++] = mMarkLatLngMap;
+                mBaiduMap.addOverlay(ooA);
+            }
+            else Toast.makeText(MainActivity.this,"已达到MarkMap最大的数量",Toast.LENGTH_LONG).show();
+            //mBaiduMap.clear();
         }
+    }
+
+    private void fbl_clearnMarkMap(){
+        mBaiduMap.clear();
+        fbl_pos_list_index = 0;
     }
 
     private void resetMap() {
@@ -1014,9 +1050,19 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
     }
 
     private void startGoLocation() {
+        Toast.makeText(MainActivity.this,"开始模拟位置",Toast.LENGTH_LONG).show();
         Intent serviceGoIntent = new Intent(MainActivity.this, ServiceGo.class);
         bindService(serviceGoIntent, mConnection, BIND_AUTO_CREATE);    // 绑定服务和活动，之后活动就可以去调服务的方法了
-        double[] latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
+        double[] latLng;
+        if(fbl_pos_list_index != 0) latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
+        else latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
+
+//        int i = 0;
+//        while(i < fbl_pos_list_index){
+//            MarkerOptions ooA = new MarkerOptions().position(new LatLng(fbl_pos_list[i].latitude, fbl_pos_list[i++].longitude)).icon(mMapIndicator);
+//            mBaiduMap.addOverlay(ooA);
+//        }
+
         serviceGoIntent.putExtra(LNG_MSG_ID, latLng[0]);
         serviceGoIntent.putExtra(LAT_MSG_ID, latLng[1]);
         double alt = Double.parseDouble(sharedPreferences.getString("setting_altitude", "55.0"));
@@ -1059,6 +1105,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
                         .setAction("Action", null).show();
                 mButtonStart.setImageResource(R.drawable.ic_position);
             } else {
+//                double[] latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
                 double[] latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
                 double alt = Double.parseDouble(sharedPreferences.getString("setting_altitude", "55.0"));
                 mServiceBinder.setPosition(latLng[0], latLng[1], alt);
@@ -1083,6 +1130,9 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
                     Snackbar.make(v, "请先点击地图位置或者搜索位置", Snackbar.LENGTH_LONG)
                             .setAction("Action", null).show();
                 } else {
+
+
+
                     startGoLocation();
                     mButtonStart.setImageResource(R.drawable.ic_fly);
                     Snackbar.make(v, "模拟位置已启动", Snackbar.LENGTH_LONG)

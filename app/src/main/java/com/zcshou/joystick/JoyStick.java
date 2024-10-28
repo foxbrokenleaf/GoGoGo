@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -21,10 +22,12 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.SearchView;
+import android.widget.Toast;
 
 import androidx.preference.PreferenceManager;
 
 import com.baidu.mapapi.map.BaiduMap;
+import com.baidu.mapapi.map.BaiduMapOptions;
 import com.baidu.mapapi.map.MapPoi;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
@@ -34,7 +37,9 @@ import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.sug.SuggestionSearch;
 import com.baidu.mapapi.search.sug.SuggestionSearchOption;
+import com.elvishew.xlog.XLog;
 import com.zcshou.database.DataBaseHistoryLocation;
+import com.zcshou.gogogo.AutoGo;
 import com.zcshou.gogogo.HistoryActivity;
 import com.zcshou.gogogo.MainActivity;
 import com.zcshou.gogogo.R;
@@ -70,10 +75,10 @@ public class JoyStick extends View {
     // 移动
     private View mJoystickLayout;
     private GoUtils.TimeCount mTimer;
-    private boolean isMove;
-    private double mSpeed = 1.2;        /* 默认的速度，单位 m/s */
+    public static boolean isMove;
+    public static double mSpeed = 1.2;        /* 默认的速度，单位 m/s */
     private double mAltitude = 55.0;
-    private double mAngle = 0;
+    public static double mAngle = 0;
     private double mR = 0;
     private double disLng = 0;
     private double disLat = 0;
@@ -92,6 +97,8 @@ public class JoyStick extends View {
     private SuggestionSearch mSuggestionSearch;
     private ListView mSearchList;
     private LinearLayout mSearchLayout;
+
+    public static int TickCounter = 0;
 
     public JoyStick(Context context) {
         super(context);
@@ -254,15 +261,22 @@ public class JoyStick extends View {
         mTimer.setListener(new GoUtils.TimeCount.TimeCountListener() {
             @Override
             public void onTick(long millisUntilFinished) {
-
+                XLog.e("JoyStick is Running!");
             }
 
             @Override
             public void onFinish() {
+                TickCounter++;
                 // 注意：这里的 x y 与 圆中角度的对应问题（以 X 轴正向为 0 度）且转换为 km
+                if(MainActivity.fbl_pos_list_index != 0){
+                    mAngle = AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][3];
+                }
                 disLng = mSpeed * (double)(DivGo / 1000) * mR * Math.cos(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
                 disLat = mSpeed * (double)(DivGo / 1000) * mR * Math.sin(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
                 mListener.onMoveInfo(mSpeed, disLng, disLat, 90.0F-mAngle);
+                AutoGo.AutoGoNowDisLng = disLng;
+                AutoGo.AutoGoNowDisLat = disLat;
+                XLog.e( "[" + TickCounter +"]onFinish onMoveInfo disLng:" + disLng + " | disLat:" + disLat + " | mAngle:" + mAngle + " | Auto_Pos_index:" + AutoGo.Auto_Pos_index);
                 mTimer.start();
             }
         });
@@ -370,6 +384,8 @@ public class JoyStick extends View {
     }
 
     private void processDirection(boolean auto, double angle, double r) {
+//        XLog.e("processDirection Function!");
+        XLog.e("processDirection: mR -> " + r + " mAngle -> " + angle);
         if (r <= 0) {
             mTimer.cancel();
             isMove = false;
@@ -385,9 +401,10 @@ public class JoyStick extends View {
                 mTimer.cancel();
                 isMove = false;
                 // 注意：这里的 x y 与 圆中角度的对应问题（以 X 轴正向为 0 度）且转换为 km
-                disLng = mSpeed * (double)(DivGo / 1000) * mR * Math.cos(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
-                disLat = mSpeed * (double)(DivGo / 1000) * mR * Math.sin(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
+                disLng = mSpeed * (double)(DivGo / 1000) * mR * Math.cos(mAngle * Math.PI / 180) / 1000;// 注意安卓中的三角函数使用的是弧度
+                disLat = mSpeed * (double)(DivGo / 1000) * mR * Math.sin(mAngle * Math.PI / 180) / 1000;// 注意安卓中的三角函数使用的是弧度
                 mListener.onMoveInfo(mSpeed, disLng, disLat, 90.0F-mAngle);
+                XLog.e("processDirection onMoveInfo");
             }
         }
     }
