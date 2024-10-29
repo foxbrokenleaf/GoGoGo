@@ -23,8 +23,13 @@
 ## 简介
 &emsp;&emsp;影梭是一个基于 Android 调试 API + 百度地图及定位 SDK 实现的安卓定位修改工具，并且同时实现了一个可以自由控制移动的摇杆。使用影梭，不需要 ROOT 权限就可以随意修改自己的当前位置以及模拟移动。
 
-1. 源码仓库：[Github](https://github.com/ZCShou/GoGoGo)（推荐）、[Gitee](https://gitee.com/itexp/gogogo)（镜像）
-2. 下载地址：[Github](https://github.com/ZCShou/GoGoGo/releases)（推荐）、[Gitee](https://gitee.com/itexp/gogogo/releases)（镜像）
+1. 原作者源码仓库：[Github](https://github.com/ZCShou/GoGoGo)（推荐）、[Gitee](https://gitee.com/itexp/gogogo)（镜像）
+2. 原作者下载地址：[Github](https://github.com/ZCShou/GoGoGo/releases)（推荐）、[Gitee](https://gitee.com/itexp/gogogo/releases)（镜像）
+3. 源码仓库：[Github](https://github.com/foxbrokenleaf/GoGoGo)（推荐）
+4. 下载地址：[Github](https://github.com/foxbrokenleaf/GoGoGo/releases)（推荐）
+
+## 注意
+1. **我在代码里四处插入了代码，以达到我设计目的功能的目的，因此引起了大量BUG，我在努力尝试修复，而不影响到原有的功能！——2024.10.30-01:01**
 
 ## 警告一
 &emsp;&emsp;**最近，有网友直接白嫖影梭后改名为标枪定位，然后添加广告（除了加广告，功能没有任何改变），但是，没有按照 GPLv3 协议的要求进行开源（我已经联系过该网友进了提醒，但并没有收到回复），在此提醒：**
