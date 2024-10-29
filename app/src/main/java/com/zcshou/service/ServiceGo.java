@@ -172,14 +172,23 @@ public class ServiceGo extends Service {
                 mCurLng += disLng / (111.320 * Math.cos(Math.abs(mCurLat) * Math.PI / 180));
                 mCurLat += disLat / 110.574;
                 mCurBea = (float) angle;
-                if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mLngDiff < mCurLng && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude + mLngDiff > mCurLng)
-                    if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mLatDiff < mCurLat && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude + mLatDiff > mCurLat)
-                        if(MainActivity.fbl_pos_list_index - 1 != AutoGo.Auto_Pos_index)
-                            AutoGo.Auto_Pos_index++;
+                if(MainActivity.fbl_pos_list_index != 0) AutoGoUpdataIndex();
                 //new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
-                XLog.e(msg + "ServiceGo onMoveInfo -> dest - mCurLng:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mCurLng)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | dest - mCurLat:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+                if(MainActivity.fbl_pos_list_index != 0) XLog.e(msg + "ServiceGo onMoveInfo -> dest - mCurLng:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mCurLng)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | dest - mCurLat:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
                 XLog.e(msg + "ServiceGo onMoveInfo -> mCurLng:" + new BigDecimal(mCurLng).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | mCurLat:" + new BigDecimal(mCurLat).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
 
+            }
+
+            private void AutoGoUpdataIndex(){
+//                if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mLngDiff < mCurLng && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude + mLngDiff > mCurLng)
+//                    if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mLatDiff < mCurLat && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude + mLatDiff > mCurLat)
+//                        if(MainActivity.fbl_pos_list_index - 1 != AutoGo.Auto_Pos_index)
+//                            AutoGo.Auto_Pos_index++;
+                if(JoyStick.TickCounter > AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][4] / mSpeed){
+                    AutoGo.Auto_Pos_index++;
+                    JoyStick.TickCounter = 0;
+                    XLog.e("To destition!");
+                }
             }
 
             @Override

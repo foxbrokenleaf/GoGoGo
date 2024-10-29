@@ -97,15 +97,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.zcshou.joystick.JoyStick;
 import com.zcshou.service.ServiceGo;
 import com.zcshou.database.DataBaseHistoryLocation;
 import com.zcshou.database.DataBaseHistorySearch;
 import com.zcshou.utils.ShareUtils;
 import com.zcshou.utils.GoUtils;
 import com.zcshou.utils.MapUtils;
-
-import com.zcshou.gogogo.AutoGo;
 
 import com.elvishew.xlog.XLog;
 
@@ -1053,16 +1050,11 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
         Toast.makeText(MainActivity.this,"开始模拟位置",Toast.LENGTH_LONG).show();
         Intent serviceGoIntent = new Intent(MainActivity.this, ServiceGo.class);
         bindService(serviceGoIntent, mConnection, BIND_AUTO_CREATE);    // 绑定服务和活动，之后活动就可以去调服务的方法了
-        double[] latLng;
-        if(fbl_pos_list_index != 0) latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
-        else latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
-
-//        int i = 0;
-//        while(i < fbl_pos_list_index){
-//            MarkerOptions ooA = new MarkerOptions().position(new LatLng(fbl_pos_list[i].latitude, fbl_pos_list[i++].longitude)).icon(mMapIndicator);
-//            mBaiduMap.addOverlay(ooA);
-//        }
-
+        double[] latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
+        if(fbl_pos_list_index != 0) {
+            latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
+            startAutoGo();
+        }
         serviceGoIntent.putExtra(LNG_MSG_ID, latLng[0]);
         serviceGoIntent.putExtra(LAT_MSG_ID, latLng[1]);
         double alt = Double.parseDouble(sharedPreferences.getString("setting_altitude", "55.0"));
@@ -1072,6 +1064,10 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
         XLog.d("startForegroundService: ServiceGo");
 
         isMockServStart = true;
+    }
+
+    private void startAutoGo(){
+
     }
 
     private void stopGoLocation() {
@@ -1105,7 +1101,6 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
                         .setAction("Action", null).show();
                 mButtonStart.setImageResource(R.drawable.ic_position);
             } else {
-//                double[] latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
                 double[] latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
                 double alt = Double.parseDouble(sharedPreferences.getString("setting_altitude", "55.0"));
                 mServiceBinder.setPosition(latLng[0], latLng[1], alt);

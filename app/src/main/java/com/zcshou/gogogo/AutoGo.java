@@ -23,7 +23,7 @@ public class AutoGo extends Activity{
 
     public static TextView opinfo;
 
-    //[[len, high, l, ang], ...]
+    //[[len, high, l, ang, len_real], ...]
     public static double[][] mTwoPos_Len_Hig;
     public static int Pos_index = 0;
 
@@ -49,14 +49,25 @@ public class AutoGo extends Activity{
                 startService(intent);
             }
         });
-
     }
 
-    public static void AutoGoCalu(){
-        mTwoPos_Len_Hig = new double[MainActivity.fbl_pos_list_index - 1][4];
+    private double Haversine(LatLng p1, LatLng p2){
+        double R = 6371.008;
+        double deltaLatitude = Math.toRadians(p2.latitude - p1.latitude);
+        double deltaLongitude = Math.toRadians(p2.longitude - p1.longitude);
+        double latitude1 = Math.toRadians(p1.latitude);
+        double latitude2 = Math.toRadians(p2.latitude);
+        double a = Math.pow(Math.sin(deltaLatitude / 2), 2) + Math.cos(latitude1) * Math.cos(latitude2) * Math.pow(Math.sin(deltaLongitude / 2), 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+        return  R * c;
+    }
+
+    public void AutoGoCalu(){
+        mTwoPos_Len_Hig = new double[MainActivity.fbl_pos_list_index - 1][5];
 
         int index = 0;
-        String output_str = "" + Math.sqrt(9) + " | ";
+        String show_info_in_TextView = "";
 
         while(index < MainActivity.fbl_pos_list_index) XLog.e("markMap_Pos["+ index +"] -> " + MainActivity.fbl_pos_list[index++].toString());
         index = 0;
@@ -64,29 +75,48 @@ public class AutoGo extends Activity{
             mTwoPos_Len_Hig[index][0] = calcTwoPosLen(MainActivity.fbl_pos_list[index].longitude * 1000, MainActivity.fbl_pos_list[index + 1].longitude * 1000);
             mTwoPos_Len_Hig[index][1] = calcTwoPosHig(MainActivity.fbl_pos_list[index].latitude * 1000, MainActivity.fbl_pos_list[index + 1].latitude * 1000);
             mTwoPos_Len_Hig[index][2] = Math.sqrt(Math.pow(mTwoPos_Len_Hig[index][0],2) + Math.pow(mTwoPos_Len_Hig[index][1],2));
+            mTwoPos_Len_Hig[index][4] = Haversine(MainActivity.fbl_pos_list[index], MainActivity.fbl_pos_list[index + 1]) * 1000;
+
+            double tDegrees = Math.toDegrees(Math.asin((mTwoPos_Len_Hig[index][1] / mTwoPos_Len_Hig[index][2])));
+            tDegrees = new BigDecimal(tDegrees).setScale(0, BigDecimal.ROUND_HALF_UP).doubleValue();
+
             //(+, +)
             if(mTwoPos_Len_Hig[index][0] > 0.0 && mTwoPos_Len_Hig[index][1] > 0.0){
-                mTwoPos_Len_Hig[index][3] = Math.toDegrees(Math.asin((mTwoPos_Len_Hig[index][1] / mTwoPos_Len_Hig[index][2])));
+                mTwoPos_Len_Hig[index][3] = tDegrees;
             }
             //(-, +)
             else if(mTwoPos_Len_Hig[index][0] < 0.0 && mTwoPos_Len_Hig[index][1] > 0.0){
-                mTwoPos_Len_Hig[index][3] = -180 - (Math.toDegrees(Math.asin((mTwoPos_Len_Hig[index][1] / mTwoPos_Len_Hig[index][2]))));
+                mTwoPos_Len_Hig[index][3] = -180 - (tDegrees);
             }
             //(-, -)
             else if(mTwoPos_Len_Hig[index][0] < 0.0 && mTwoPos_Len_Hig[index][1] < 0.0){
-                mTwoPos_Len_Hig[index][3] = -180 - Math.toDegrees(Math.asin((mTwoPos_Len_Hig[index][1] / mTwoPos_Len_Hig[index][2])));
+                mTwoPos_Len_Hig[index][3] = -180 - tDegrees;
             }
             //(+, -)
             else{
-                mTwoPos_Len_Hig[index][3] = Math.toDegrees(Math.asin((mTwoPos_Len_Hig[index][1] / mTwoPos_Len_Hig[index][2])));
+                mTwoPos_Len_Hig[index][3] = tDegrees;
             }
-            output_str = index + " -> " + mTwoPos_Len_Hig[index][0] + " | " + mTwoPos_Len_Hig[index][1] + " | " + mTwoPos_Len_Hig[index][2] + " | " + mTwoPos_Len_Hig[index][3];
+
+            String output_str = index + " -> " + MainActivity.fbl_pos_list[index] + " | " + "Angle:" + mTwoPos_Len_Hig[index][3] + " | " + "Len:" + mTwoPos_Len_Hig[index][4];
+            show_info_in_TextView += output_str + '\n';
             XLog.e("AutoGo_MSG:" + output_str);
 
             index++;
         }
 
-        opinfo.setText(output_str);
+        opinfo.setText(show_info_in_TextView);
+    }
+
+
+
+    private double VincentyConstents(LatLng p1, LatLng p2){
+        double res = 0.0;
+
+        int a = 6378137;
+        double b = 6356752.3142;
+        double f = 1 / 298.257223563;
+
+        return res;
     }
 
     public static double[][] get_mTwoPos_Len_Hig(){

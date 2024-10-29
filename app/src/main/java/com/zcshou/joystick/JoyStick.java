@@ -268,17 +268,20 @@ public class JoyStick extends View {
             public void onFinish() {
                 TickCounter++;
                 // 注意：这里的 x y 与 圆中角度的对应问题（以 X 轴正向为 0 度）且转换为 km
-                if(MainActivity.fbl_pos_list_index != 0){
-                    mAngle = AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][3];
-                }
+                if(MainActivity.fbl_pos_list_index != 0) AutoGoUpdataAngle();
                 disLng = mSpeed * (double)(DivGo / 1000) * mR * Math.cos(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
                 disLat = mSpeed * (double)(DivGo / 1000) * mR * Math.sin(mAngle * 2 * Math.PI / 360) / 1000;// 注意安卓中的三角函数使用的是弧度
                 mListener.onMoveInfo(mSpeed, disLng, disLat, 90.0F-mAngle);
-                AutoGo.AutoGoNowDisLng = disLng;
-                AutoGo.AutoGoNowDisLat = disLat;
-                XLog.e( "[" + TickCounter +"]onFinish onMoveInfo disLng:" + disLng + " | disLat:" + disLat + " | mAngle:" + mAngle + " | Auto_Pos_index:" + AutoGo.Auto_Pos_index);
+//                AutoGo.AutoGoNowDisLng = disLng;
+//                AutoGo.AutoGoNowDisLat = disLat;
                 mTimer.start();
             }
+
+            private void AutoGoUpdataAngle(){
+                mAngle = AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][3];
+                XLog.e( "[" + TickCounter +"]onFinish onMoveInfo disLng:" + disLng + " | disLat:" + disLat + " | mAngle:" + mAngle + " | Auto_Pos_index:" + AutoGo.Auto_Pos_index);
+            }
+
         });
         // 获取参数区设置的速度
         try {
