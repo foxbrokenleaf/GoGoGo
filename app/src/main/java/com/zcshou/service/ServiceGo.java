@@ -174,7 +174,7 @@ public class ServiceGo extends Service {
                 mCurBea = (float) angle;
                 if(MainActivity.fbl_pos_list_index != 0) AutoGoUpdataIndex();
                 //new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue()
-                if(MainActivity.fbl_pos_list_index != 0) XLog.e(msg + "ServiceGo onMoveInfo -> dest - mCurLng:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].longitude - mCurLng)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | dest - mCurLat:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
+                if(MainActivity.fbl_pos_list_index != 0) XLog.e(msg + "ServiceGo onMoveInfo -> dest - mCurLng:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index + 1].longitude - mCurLng)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | dest - mCurLat:" + new BigDecimal((MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index + 1].latitude - mCurLat)).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
                 XLog.e(msg + "ServiceGo onMoveInfo -> mCurLng:" + new BigDecimal(mCurLng).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue() + " | mCurLat:" + new BigDecimal(mCurLat).setScale(6, BigDecimal.ROUND_HALF_UP).doubleValue());
 
             }
@@ -184,11 +184,18 @@ public class ServiceGo extends Service {
 //                    if(MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude - mLatDiff < mCurLat && MainActivity.fbl_pos_list[AutoGo.Auto_Pos_index].latitude + mLatDiff > mCurLat)
 //                        if(MainActivity.fbl_pos_list_index - 1 != AutoGo.Auto_Pos_index)
 //                            AutoGo.Auto_Pos_index++;
-                if(JoyStick.TickCounter > AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][4] / mSpeed){
-                    AutoGo.Auto_Pos_index++;
-                    JoyStick.TickCounter = 0;
-                    XLog.e("To destition!");
+                try {
+                    if(JoyStick.TickCounter > AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index][4] / mSpeed){
+                        if(AutoGo.Auto_Pos_index < MainActivity.fbl_pos_list_index - 2){
+                            AutoGo.Auto_Pos_index++;
+                            JoyStick.TickCounter = 0;
+                        }
+                        else AutoGo.AutoGo_open = false;
+                    }
+                }catch (ArrayIndexOutOfBoundsException exception){
+                    XLog.e("Auto_Pos_index out over arrary index!");
                 }
+
             }
 
             @Override

@@ -278,8 +278,14 @@ public class JoyStick extends View {
             }
 
             private void AutoGoUpdataAngle(){
-                mAngle = AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index - 1][3];
-                XLog.e( "[" + TickCounter +"]onFinish onMoveInfo disLng:" + disLng + " | disLat:" + disLat + " | mAngle:" + mAngle + " | Auto_Pos_index:" + AutoGo.Auto_Pos_index);
+                mAngle = AutoGo.mTwoPos_Len_Hig[AutoGo.Auto_Pos_index][3];
+                if(!AutoGo.AutoGo_open){
+                    mR = 0;
+                }
+                else{
+                    mR = 1;
+                }
+                XLog.e( "[" + TickCounter +"]onFinish onMoveInfo disLng:" + disLng + " | disLat:" + disLat + " | mAngle:" + mAngle + " | mR:" + mR + " | Auto_Pos_index:" + AutoGo.Auto_Pos_index);
             }
 
         });

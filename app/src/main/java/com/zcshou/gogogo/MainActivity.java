@@ -175,7 +175,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
     private String mUpdateFilename;
 
     /*============================== FBL 新增代码 ==============================*/
-    public static final int fbl_max_mark_num = 5;
+    public static final int fbl_max_mark_num = 50;
     public static int fbl_pos_list_index = 0;
     public static LatLng[] fbl_pos_list = new  LatLng[fbl_max_mark_num];
 
@@ -924,6 +924,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
                 MarkerOptions ooA = new MarkerOptions().position(mMarkLatLngMap).icon(mMapIndicator);
                 fbl_pos_list[fbl_pos_list_index++] = mMarkLatLngMap;
                 mBaiduMap.addOverlay(ooA);
+                Toast.makeText(MainActivity.this,fbl_pos_list[fbl_pos_list_index - 1].toString(),Toast.LENGTH_LONG).show();
             }
             else Toast.makeText(MainActivity.this,"已达到MarkMap最大的数量",Toast.LENGTH_LONG).show();
             //mBaiduMap.clear();
@@ -1075,6 +1076,7 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
         Intent serviceGoIntent = new Intent(MainActivity.this, ServiceGo.class);
         stopService(serviceGoIntent);
         isMockServStart = false;
+        fbl_clearnMarkMap();
     }
 
     private void doGoLocation(View v) {
@@ -1102,6 +1104,10 @@ public class MainActivity extends BaseActivity implements SensorEventListener {
                 mButtonStart.setImageResource(R.drawable.ic_position);
             } else {
                 double[] latLng = MapUtils.bd2wgs(mMarkLatLngMap.longitude, mMarkLatLngMap.latitude);
+                if(fbl_pos_list_index != 0) {
+                    latLng = MapUtils.bd2wgs(fbl_pos_list[0].longitude, fbl_pos_list[0].latitude);
+                    startAutoGo();
+                }
                 double alt = Double.parseDouble(sharedPreferences.getString("setting_altitude", "55.0"));
                 mServiceBinder.setPosition(latLng[0], latLng[1], alt);
                 Snackbar.make(v, "已传送到新位置", Snackbar.LENGTH_LONG)

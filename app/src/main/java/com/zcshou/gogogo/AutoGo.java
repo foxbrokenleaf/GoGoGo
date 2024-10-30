@@ -27,7 +27,9 @@ public class AutoGo extends Activity{
     public static double[][] mTwoPos_Len_Hig;
     public static int Pos_index = 0;
 
-    public static int Auto_Pos_index = 1;
+    public static boolean AutoGo_open = false;
+
+    public static int Auto_Pos_index = 0;
 
     public static double AutoGoNowDisLng = 0.0;
     public static double AutoGoNowDisLat = 0.0;
@@ -36,6 +38,8 @@ public class AutoGo extends Activity{
     public void onCreate(Bundle bundle){
         super.onCreate(bundle);
         setContentView(R.layout.activity_autogo);
+
+        AutoGo_open = true;
 
         opinfo = (TextView) findViewById(R.id.opinfo);
 
@@ -65,6 +69,7 @@ public class AutoGo extends Activity{
 
     public void AutoGoCalu(){
         mTwoPos_Len_Hig = new double[MainActivity.fbl_pos_list_index - 1][5];
+        Auto_Pos_index = 0;
 
         int index = 0;
         String show_info_in_TextView = "";
@@ -97,7 +102,7 @@ public class AutoGo extends Activity{
                 mTwoPos_Len_Hig[index][3] = tDegrees;
             }
 
-            String output_str = index + " -> " + MainActivity.fbl_pos_list[index] + " | " + "Angle:" + mTwoPos_Len_Hig[index][3] + " | " + "Len:" + mTwoPos_Len_Hig[index][4];
+            String output_str = index + " -> " +  "Angle:" + mTwoPos_Len_Hig[index][3] + " | " + "Len:" + mTwoPos_Len_Hig[index][4];
             show_info_in_TextView += output_str + '\n';
             XLog.e("AutoGo_MSG:" + output_str);
 
